@@ -8,7 +8,7 @@ Tokens="Authorization: Bearer"
 # Can retrieve cloudflare Domain id and list zone's, because, lazy
 
 # Place at:
-# curl https://raw.githubusercontent.com/yulewang/cloudflare-api-v4-ddns/master/cf-v4-ddns.sh > /usr/local/bin/cf-ddns.sh && chmod +x /usr/local/bin/cf-ddns.sh
+# curl https://raw.githubusercontent.com/Leao9203/cloudflare-api-v4-ddns/dev/cf-v4-ddns.sh > /usr/local/bin/cf-ddns.sh && chmod +x /usr/local/bin/cf-ddns.sh
 # run `crontab -e` and add next line:
 # */1 * * * * /usr/local/bin/cf-ddns.sh >/dev/null 2>&1
 # or you need log:
