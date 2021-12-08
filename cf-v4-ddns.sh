@@ -2,8 +2,6 @@
 set -o errexit
 set -o nounset
 set -o pipefail
-Keys="X-Auth-Key:"
-Tokens="Authorization: Bearer"
 # Automatically update your CloudFlare DNS record to the IP, Dynamic DNS
 # Can retrieve cloudflare Domain id and list zone's, because, lazy
 
@@ -16,22 +14,24 @@ Tokens="Authorization: Bearer"
 
 
 # Usage:
-# cf-ddns.sh -k cloudflare-api-key \
-#            -u user@example.com \
+# cf-ddns.sh -u user@example.com \
 #            -h host.example.com \     # fqdn of the record you want to update
 #            -z example.com \          # will show you all zones if forgot, but you need this
-#            -a true|false \          # specify cf tokens/global_keys, default: false
 #            -t A|AAAA                 # specify ipv4/ipv6, default: ipv4
 
 # Optional flags:
+#            -k cloudflare-api-key \   # specify cf global keys
+#            -a cloudflare-api-token \ # specify cf tokens
 #            -f false|true \           # force dns update, disregard local stored ip
-#            -a true|false \          # which type of api to use
 
 # default config
 
 # API key, see https://www.cloudflare.com/a/account/my-account,
-# incorrect api-key results in E_UNAUTH error
 CFKEY=
+
+CFAPI_TOKEN=
+
+Authorization=
 
 # Username, eg: user@example.com
 CFUSER=
@@ -51,9 +51,6 @@ CFTTL=120
 # Ignore local file, update ip anyway
 FORCE=false
 
-# Use Cloudflare API Tokens or API Keys,true(API Tokens)|false(Global API Keys), default API Tokens
-UseTokens=false
-Which2Use=${Keys}
 
 WANIPSITE="http://ipv4.icanhazip.com"
 
@@ -65,18 +62,16 @@ while getopts k:u:h:z:t:f:a: opts; do
     h) CFRECORD_NAME=${OPTARG} ;;
     z) CFZONE_NAME=${OPTARG} ;;
     t) CFRECORD_TYPE=${OPTARG} ;;
-    a) UseTokens=${OPTARG};;
+    a) CFAPI_TOKEN=${OPTARG};;
     f) FORCE=${OPTARG} ;;
   esac
 done
 
 # Switch which API to use
-if [ "${UseTokens}" = "true" ]; then
-  Which2Use=${Tokens}
-elif [ "${UseTokens}" = "false" ]; then
-  :
-else
-  echo "$UseTokens specified is invalid, UseTokens can only be true(API Tokens)|false(Global API Keys)"
+if [ "${CFKEY}" = "" ]; then
+  Authorization="Authorization: Bearer ${CFAPI_TOKEN}"
+elif [ "${CFAPI_TOKEN}" = "" ]; then
+  Authorization="X-Auth-Key: ${CFKEY}"
 fi
 
 # Site to retrieve WAN ip, other examples are: bot.whatismyipaddress.com, https://api.ipify.org/ ...
@@ -90,9 +85,13 @@ else
 fi
 
 # If required settings are missing just exit
-if [ "$CFKEY" = "" ]; then
-  echo "Missing api-key, get at: https://www.cloudflare.com/a/account/my-account"
-  echo "and save in ${0} or using the -k flag"
+if [ "$CFKEY" = "" ] && [ "$CFAPI_TOKEN" = "" ]; then
+  echo "Missing api, get at: https://www.cloudflare.com/a/account/my-account"
+  echo "and save in ${0} or using the -k flag or -a flag"
+  exit 2
+fi
+if [ ! "$CFKEY" = "" ] && [ ! "$CFAPI_TOKEN" = "" ]; then
+  echo "API error, the number of api can only be allowed one."
   exit 2
 fi
 if [ "$CFUSER" = "" ]; then
@@ -137,8 +136,8 @@ if [ -f $ID_FILE ] && [ $(wc -l $ID_FILE | cut -d " " -f 1) == 4 ] \
     CFRECORD_ID=$(sed -n '2,1p' "$ID_FILE")
 else
     echo "Updating zone_identifier & record_identifier"
-    CFZONE_ID=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones?name=$CFZONE_NAME" -H "X-Auth-Email: $CFUSER" -H "$Which2Use $CFKEY" -H "Content-Type: application/json" | grep -Po '(?<="id":")[^"]*' | head -1 )
-    CFRECORD_ID=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/$CFZONE_ID/dns_records?name=$CFRECORD_NAME" -H "X-Auth-Email: $CFUSER" -H "$Which2Use $CFKEY" -H "Content-Type: application/json"  | grep -Po '(?<="id":")[^"]*' | head -1 )
+    CFZONE_ID=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones?name=$CFZONE_NAME" -H "X-Auth-Email: $CFUSER" -H "$Authorization" -H "Content-Type: application/json" | grep -Po '(?<="id":")[^"]*' | head -1 )
+    CFRECORD_ID=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/$CFZONE_ID/dns_records?name=$CFRECORD_NAME" -H "X-Auth-Email: $CFUSER" -H "$Authorization" -H "Content-Type: application/json"  | grep -Po '(?<="id":")[^"]*' | head -1 )
     echo "$CFZONE_ID" > $ID_FILE
     echo "$CFRECORD_ID" >> $ID_FILE
     echo "$CFZONE_NAME" >> $ID_FILE
@@ -150,7 +149,7 @@ echo "Updating DNS to $WAN_IP"
 
 RESPONSE=$(curl -s -X PUT "https://api.cloudflare.com/client/v4/zones/$CFZONE_ID/dns_records/$CFRECORD_ID" \
   -H "X-Auth-Email: $CFUSER" \
-  -H "$Which2Use $CFKEY" \
+  -H "$Authorization" \
   -H "Content-Type: application/json" \
   --data "{\"id\":\"$CFZONE_ID\",\"type\":\"$CFRECORD_TYPE\",\"name\":\"$CFRECORD_NAME\",\"content\":\"$WAN_IP\", \"ttl\":$CFTTL}")
 
