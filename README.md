@@ -1,7 +1,7 @@
 Cloudflare API v4 Dynamic DNS Update in Bash, without unnecessary requests
 Now the script also supports v6(AAAA DDNS Recoards)
 
-![中文文档](README_zh.md)
+[中文文档](README_zh.md)
 
 # Usage
 	curl https://raw.githubusercontent.com/Leao9203/cloudflare-api-v4-ddns/dev/cf-v4-ddns.sh > /usr/local/bin/cf-ddns.sh && chmod +x /usr/local/bin/cf-ddns.sh
