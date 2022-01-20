@@ -5,25 +5,6 @@ set -o pipefail
 # Automatically update your CloudFlare DNS record to the IP, Dynamic DNS
 # Can retrieve cloudflare Domain id and list zone's, because, lazy
 
-# Place at:
-# curl https://raw.githubusercontent.com/Leao9203/cloudflare-api-v4-ddns/dev/cf-v4-ddns.sh > /usr/local/bin/cf-ddns.sh && chmod +x /usr/local/bin/cf-ddns.sh
-# run `crontab -e` and add next line:
-# */1 * * * * /usr/local/bin/cf-ddns.sh >/dev/null 2>&1
-# or you need log:
-# */1 * * * * /usr/local/bin/cf-ddns.sh >> /var/log/cf-ddns.log 2>&1
-
-
-# Usage:
-# cf-ddns.sh -u user@example.com \
-#            -h host.example.com \     # fqdn of the record you want to update
-#            -z example.com \          # will show you all zones if forgot, but you need this
-#            -t A|AAAA                 # specify ipv4/ipv6, default: ipv4
-
-# Optional flags:
-#            -k cloudflare-api-key \   # specify cf global keys
-#            -a cloudflare-api-token \ # specify cf tokens
-#            -f false|true \           # force dns update, disregard local stored ip
-
 # default config
 
 # API key, see https://www.cloudflare.com/a/account/my-account,
