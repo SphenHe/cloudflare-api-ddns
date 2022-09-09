@@ -3,7 +3,7 @@ Now the script also supports v6(AAAA DDNS Recoards)
 
 [中文文档](README_zh.md)
 
-More details can be found on my blog (Chinese) https://blog.ascn.site/post/d6e420c9614f.html
+More details can be found on my blog (zh_CN Only) https://blog.ascn.site/post/20220121081740/
 
 # Usage
 	curl https://raw.githubusercontent.com/Leao9203/cloudflare-api-v4-ddns/dev/cf-v4-ddns.sh > /usr/local/bin/cf-ddns.sh && chmod +x /usr/local/bin/cf-ddns.sh

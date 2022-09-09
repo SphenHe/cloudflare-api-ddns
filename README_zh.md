@@ -1,7 +1,7 @@
 基于 Cloudflare API 在 Bash 中进行 DDNS 更新，无需一些不必要的依赖。
 现在这个脚本已经支持了 IPv6（AAAA 的 DNS 记录）
 
-更详细的用法可以在我博客上看到 https://blog.ascn.site/post/d6e420c9614f.html
+更详细的用法可以在我博客上看到 https://blog.ascn.site/post/20220121081740/
 
 # 用法
 	curl https://raw.githubusercontent.com/Leao9203/cloudflare-api-v4-ddns/dev/cf-v4-ddns.sh > /usr/local/bin/cf-ddns.sh && chmod +x /usr/local/bin/cf-ddns.sh
