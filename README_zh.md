@@ -8,8 +8,8 @@
 
 下载并使脚本可执行：
 
-```sh
-curl https://raw.githubusercontent.com/Leao9203/cloudflare-api-v4-ddns/dev/cf-v4-ddns.sh > /usr/local/bin/cf-ddns.sh && chmod +x /usr/local/bin/cf-ddns.sh
+```bash
+curl https://raw.githubusercontent.com/SphenHe/cloudflare-api-ddns/dev/cf-ddns.sh > /usr/local/bin/cf-ddns.sh && chmod +x /usr/local/bin/cf-ddns.sh
 ```
 
 ### 命令
