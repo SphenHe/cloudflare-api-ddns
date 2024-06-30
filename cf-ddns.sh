@@ -66,41 +66,57 @@ if [ -f $ID_FILE ] && [ "$(wc -l < $ID_FILE)" -eq 4 ] \
   CFZONE_ID=$(sed -n '1p' $ID_FILE)
   CFRECORD_ID=$(sed -n '2p' $ID_FILE)
 else
+  echo "Updating zone_identifier & record_identifier"
+  CFZONE_ID=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones?name=$CFZONE_NAME" -H "X-Auth-Email: $CFUSER" -H "Authorization: Bearer $CFAPI_TOKEN" -H "Content-Type: application/json" | grep -Po '(?<="id":")[^"]*' | head -1)
+  CFRECORD_ID=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/$CFZONE_ID/dns_records?name=$CFRECORD_NAME" -H "X-Auth-Email: $CFUSER" -H "Authorization: Bearer $CFAPI_TOKEN" -H "Content-Type: application/json" | grep -Po '(?<="id":")[^"]*' | head -1 || true)
   if [ ! -f $ID_FILE ]; then
     touch $ID_FILE
     echo "No previous ID file found, need ID update"
+    # if the DNS record is not found, then create one
+    if [ -z "$CFRECORD_ID" ]; then
+      echo "Creating DNS record for $CFRECORD_NAME with IP $WAN_IP"
+      RESPONSE=$(curl -s -X POST "https://api.cloudflare.com/client/v4/zones/$CFZONE_ID/dns_records" \
+        -H "X-Auth-Email: $CFUSER" \
+        -H "Authorization: Bearer ${CFAPI_TOKEN}" \
+        -H "Content-Type: application/json" \
+        --data "{\"type\":\"$CFRECORD_TYPE\",\"name\":\"$CFRECORD_NAME\",\"content\":\"$WAN_IP\", \"ttl\":$CFTTL}")
+      echo "Updated successfully!"
+      CFRECORD_ID=$(echo $RESPONSE | grep -Po '(?<="id":")[^"]*' | head -1)
+    fi
   fi
-  echo "Updating zone_identifier & record_identifier"
-  CFZONE_ID=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones?name=$CFZONE_NAME" -H "X-Auth-Email: $CFUSER" -H "Authorization: Bearer ${CFAPI_TOKEN}" -H "Content-Type: application/json" | grep -Po '(?<="id":")[^"]*' | head -1)
-  CFRECORD_ID=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/$CFZONE_ID/dns_records?name=$CFRECORD_NAME" -H "X-Auth-Email: $CFUSER" -H "Authorization: Bearer ${CFAPI_TOKEN}" -H "Content-Type: application/json" | grep -Po '(?<="id":")[^"]*' | head -1)
   echo "$CFZONE_ID" > $ID_FILE
   echo "$CFRECORD_ID" >> $ID_FILE
   echo "$CFZONE_NAME" >> $ID_FILE
   echo "$CFRECORD_NAME" >> $ID_FILE
 fi
 
-# Retrieve the current DNS record value
-CURRENT_DNS_IP=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/$CFZONE_ID/dns_records/$CFRECORD_ID" \
-  -H "X-Auth-Email: $CFUSER" \
-  -H "Authorization: Bearer ${CFAPI_TOKEN}" \
-  -H "Content-Type: application/json" | grep -Po '(?<="content":")[^"]*' | head -1)
+# Retrieve the current DNS record value if it exists
+if [ -n "$CFRECORD_ID" ]; then
+  CURRENT_DNS_IP=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/$CFZONE_ID/dns_records/$CFRECORD_ID" \
+    -H "X-Auth-Email: $CFUSER" \
+    -H "Authorization: Bearer $CFAPI_TOKEN" \
+    -H "Content-Type: application/json" | grep -Po '(?<="content":")[^"]*' | head -1)
+else
+  CURRENT_DNS_IP=""
+fi
 
-# If WAN IP is unchanged and not -f flag, exit here
+# If WAN IP is unchanged and not -f flag, exit here. Else, update the DNS record
 if [ "$WAN_IP" = "$CURRENT_DNS_IP" ] && [ "$FORCE" = false ]; then
   echo "WAN IP unchanged. To force update, use the -f true flag"
   exit 0
-fi
-
-# Update Cloudflare DNS record if WAN IP changed
-echo "Updating DNS to $WAN_IP"
-RESPONSE=$(curl -s -X PUT "https://api.cloudflare.com/client/v4/zones/$CFZONE_ID/dns_records/$CFRECORD_ID" \
+else 
+  # Update Cloudflare DNS record if WAN IP changed
+  echo "Updating DNS to $WAN_IP"
+  RESPONSE=$(curl -s -X PUT "https://api.cloudflare.com/client/v4/zones/$CFZONE_ID/dns_records/$CFRECORD_ID" \
   -H "X-Auth-Email: $CFUSER" \
   -H "Authorization: Bearer ${CFAPI_TOKEN}" \
   -H "Content-Type: application/json" \
   --data "{\"type\":\"$CFRECORD_TYPE\",\"name\":\"$CFRECORD_NAME\",\"content\":\"$WAN_IP\", \"ttl\":$CFTTL}")
+fi
 
 if [[ "$RESPONSE" == *"\"success\":true"* ]]; then
   echo "Updated successfully!"
+  exit 0
 else
   echo "Update failed."
   echo "Response: $RESPONSE"
