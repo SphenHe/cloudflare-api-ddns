@@ -12,10 +12,10 @@ CFRECORD_NAME=""
 CFZONE_NAME=""
 
 CFTTL=120
-FORCE=false 
+FORCE=false
 
 # Get parameter
-while getopts 46:a:u:h:z:f: opts; do
+while getopts 46a:u:h:z:f: opts; do
   case ${opts} in
     4) CFRECORD_TYPE="A"; WANIPSITE="http://ipv4.icanhazip.com" ;;
     6) CFRECORD_TYPE="AAAA"; WANIPSITE="http://ipv6.icanhazip.com" ;;
@@ -104,7 +104,7 @@ fi
 if [ "$WAN_IP" = "$CURRENT_DNS_IP" ] && [ "$FORCE" = false ]; then
   echo "WAN IP unchanged. To force update, use the -f true flag"
   exit 0
-else 
+else
   # Update Cloudflare DNS record if WAN IP changed
   echo "Updating DNS to $WAN_IP"
   RESPONSE=$(curl -s -X PUT "https://api.cloudflare.com/client/v4/zones/$CFZONE_ID/dns_records/$CFRECORD_ID" \
