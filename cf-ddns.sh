@@ -59,7 +59,7 @@ fi
 WAN_IP=$(curl -s ${WANIPSITE})
 
 # Get zone_identifier & record_identifier
-ID_FILE=.cf-id-$CFRECORD_NAME.txt
+ID_FILE=.cf-id-$CFRECORD_NAME-$CFRECORD_TYPE.txt
 if [ -f $ID_FILE ] && [ "$(wc -l < $ID_FILE)" -eq 4 ] \
   && [ "$(sed -n '3p' $ID_FILE)" = "$CFZONE_NAME" ] \
   && [ "$(sed -n '4p' $ID_FILE)" = "$CFRECORD_NAME" ]; then
@@ -68,7 +68,7 @@ if [ -f $ID_FILE ] && [ "$(wc -l < $ID_FILE)" -eq 4 ] \
 else
   echo "Updating zone_identifier & record_identifier"
   CFZONE_ID=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones?name=$CFZONE_NAME" -H "X-Auth-Email: $CFUSER" -H "Authorization: Bearer $CFAPI_TOKEN" -H "Content-Type: application/json" | grep -Po '(?<="id":")[^"]*' | head -1)
-  CFRECORD_ID=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/$CFZONE_ID/dns_records?name=$CFRECORD_NAME" -H "X-Auth-Email: $CFUSER" -H "Authorization: Bearer $CFAPI_TOKEN" -H "Content-Type: application/json" | grep -Po '(?<="id":")[^"]*' | head -1 || true)
+  CFRECORD_ID=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/$CFZONE_ID/dns_records?name=$CFRECORD_NAME&type=$CFRECORD_TYPE" -H "X-Auth-Email: $CFUSER" -H "Authorization: Bearer $CFAPI_TOKEN" -H "Content-Type: application/json" | grep -Po '(?<="id":")[^"]*' | head -1 || true)
   if [ ! -f $ID_FILE ]; then
     touch $ID_FILE
     echo "No previous ID file found, need ID update"
@@ -81,7 +81,7 @@ else
         -H "Content-Type: application/json" \
         --data "{\"type\":\"$CFRECORD_TYPE\",\"name\":\"$CFRECORD_NAME\",\"content\":\"$WAN_IP\", \"ttl\":$CFTTL}")
       echo "Updated successfully!"
-      CFRECORD_ID=$(echo $RESPONSE | grep -Po '(?<="id":")[^"]*' | head -1)
+        CFRECORD_ID=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/$CFZONE_ID/dns_records?name=$CFRECORD_NAME&type=$CFRECORD_TYPE" -H "X-Auth-Email: $CFUSER" -H "Authorization: Bearer $CFAPI_TOKEN" -H "Content-Type: application/json" | grep -Po '(?<="id":")[^"]*' | head -1 || true)
     fi
   fi
   echo "$CFZONE_ID" > $ID_FILE
@@ -97,7 +97,7 @@ if [ -n "$CFRECORD_ID" ]; then
     -H "Authorization: Bearer $CFAPI_TOKEN" \
     -H "Content-Type: application/json" | grep -Po '(?<="content":")[^"]*' | head -1)
 else
-  CURRENT_DNS_IP=""
+  CURRENT_DNS_IP="127.0.0.1"
 fi
 
 # If WAN IP is unchanged and not -f flag, exit here. Else, update the DNS record
