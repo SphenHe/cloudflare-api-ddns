@@ -7,7 +7,7 @@ More details can be found on my blog (zh_CN Only) https://blog.ascn.site/post/20
 
 # Usage
 	curl https://raw.githubusercontent.com/Leao9203/cloudflare-api-v4-ddns/dev/cf-v4-ddns.sh > /usr/local/bin/cf-ddns.sh && chmod +x /usr/local/bin/cf-ddns.sh
-	
+
 	cf-ddns.sh
 	-a cloudflare-api-token \ # specify cf token
 	-u user@example.com \     # specify cf email
@@ -17,3 +17,6 @@ More details can be found on my blog (zh_CN Only) https://blog.ascn.site/post/20
 ## Optional flags:
 	-k cloudflare-api-key \   # specify cf global key
 	-f false|true \           # force dns update, disregard local stored ip
+
+## License
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
