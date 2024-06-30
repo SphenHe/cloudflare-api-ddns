@@ -1,22 +1,34 @@
-Cloudflare API v4 Dynamic DNS Update in Bash, without unnecessary requests
-Now the script also supports v6(AAAA DDNS Recoards)
+# Cloudflare API Dynamic DNS Update Script
 
-[中文文档](README_zh.md)
+This script automatically updates your Cloudflare DNS record to the current IP, supporting both IPv4 (A) and IPv6 (AAAA) records.
 
-More details can be found on my blog (zh_CN Only) https://blog.ascn.site/post/20220121081740/
+[中文](README_zh.md) | English
 
-# Usage
-	curl https://raw.githubusercontent.com/Leao9203/cloudflare-api-v4-ddns/dev/cf-v4-ddns.sh > /usr/local/bin/cf-ddns.sh && chmod +x /usr/local/bin/cf-ddns.sh
+## Usage
 
-	cf-ddns.sh
-	-a cloudflare-api-token \ # specify cf token
-	-u user@example.com \     # specify cf email
-	-h host.example.com \     # fqdn of the record you want to update
-	-z example.com \          # will show you all zones if forgot, but you need this
-	-t A|AAAA                 # specify ipv4/ipv6, default: ipv4
-## Optional flags:
-	-k cloudflare-api-key \   # specify cf global key
-	-f false|true \           # force dns update, disregard local stored ip
+To download and make the script executable:
+
+```sh
+curl https://raw.githubusercontent.com/Leao9203/cloudflare-api-v4-ddns/dev/cf-v4-ddns.sh > /usr/local/bin/cf-ddns.sh && chmod +x /usr/local/bin/cf-ddns.sh
+```
+
+### Command
+
+```sh
+cf-ddns.sh
+	-4|-6 \                    	# specify IPv4 or IPv6
+    -a cloudflare-api-token \   # specify Cloudflare API token
+    -u user@example.com \       # specify Cloudflare email
+    -h host.example.com \       # FQDN of the record you want to update
+    -z example.com \            # your domain (zone)
+```
+
+### Optional flags
+
+```sh
+    -f false(default)|true \             # force DNS update, disregard local stored IP
+```
 
 ## License
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

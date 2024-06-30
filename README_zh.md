@@ -1,17 +1,34 @@
-基于 Cloudflare API 在 Bash 中进行 DDNS 更新，无需一些不必要的依赖。
-现在这个脚本已经支持了 IPv6（AAAA 的 DNS 记录）
+# Cloudflare API 动态 DNS 更新脚本
 
-更详细的用法可以在我博客上看到 https://blog.ascn.site/post/20220121081740/
+此脚本会自动将您的 Cloudflare DNS 记录更新为当前 IP，支持 IPv4 (A) 和 IPv6 (AAAA) 记录。
 
-# 用法
-	curl https://raw.githubusercontent.com/Leao9203/cloudflare-api-v4-ddns/dev/cf-v4-ddns.sh > /usr/local/bin/cf-ddns.sh && chmod +x /usr/local/bin/cf-ddns.sh
-	
-	cf-ddns.sh
-	-a cloudflare-api-token \ # 填写 Cloudflare API Token
-	-u user@example.com \     # 填写 Cloudflare 用户邮箱
-	-h host.example.com \     # 填写更新的子域名
-	-z example.com \          # 填写在 Cloudflare 所托管的域名
-	-t A|AAAA                 # 填写更新的记录类型，IPv4（A）或者 IPv6（AAAA）
-## 可选操作:
-	-k cloudflare-api-key \   # 使用 Cloudflare Global Key，注意不能和 API Token 同时使用。
-	-f false|true \           # 强制更新 DNS，忽略本地文件。
+中文 | [English](README.md)
+
+## 使用方法
+
+下载并使脚本可执行：
+
+```sh
+curl https://raw.githubusercontent.com/Leao9203/cloudflare-api-v4-ddns/dev/cf-v4-ddns.sh > /usr/local/bin/cf-ddns.sh && chmod +x /usr/local/bin/cf-ddns.sh
+```
+
+### 命令
+
+```sh
+cf-ddns.sh
+	-4|-6 \                    	# 指定 IPv4 或 IPv6
+    -a cloudflare-api-token \   # 指定 Cloudflare API 令牌
+    -u user@example.com \       # 指定 Cloudflare 邮箱
+    -h host.example.com \       # 您想要更新的记录的 FQDN
+    -z example.com \            # 您的域名（区域）
+```
+
+### 可选标志
+
+```sh
+    -f false(默认)|true \       # 强制 DNS 更新，不考虑本地存储的 IP
+```
+
+## 许可证
+
+此项目根据 MIT 许可证进行许可 - 详见 [LICENSE](LICENSE) 文件。
