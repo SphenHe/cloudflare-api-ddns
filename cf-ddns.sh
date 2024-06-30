@@ -17,8 +17,8 @@ FORCE=false
 # Get parameter
 while getopts 46:a:u:h:z:f: opts; do
   case ${opts} in
-    4) CFRECORD_TYPE="A"; WANIPSITE="http://ipv4.icanhazip.com" ; IP="v4";;
-    6) CFRECORD_TYPE="AAAA"; WANIPSITE="http://ipv6.icanhazip.com" ; IP="v6";;
+    4) CFRECORD_TYPE="A"; WANIPSITE="http://ipv4.icanhazip.com" ;;
+    6) CFRECORD_TYPE="AAAA"; WANIPSITE="http://ipv6.icanhazip.com" ;;
     a) CFAPI_TOKEN=${OPTARG} ;;
     u) CFUSER=${OPTARG} ;;
     h) CFRECORD_NAME=${OPTARG} ;;
@@ -55,22 +55,8 @@ if [ "$CFRECORD_NAME" != "$CFZONE_NAME" ] && ! [[ "$CFRECORD_NAME" == *"$CFZONE_
   echo " => Hostname is not a FQDN, assuming $CFRECORD_NAME"
 fi
 
-# Get current and old WAN IP
+# Get current WAN IP
 WAN_IP=$(curl -s ${WANIPSITE})
-WAN_IP_FILE=.cf-wanip-$CFRECORD_NAME-$IP.txt
-if [ -f $WAN_IP_FILE ]; then
-  OLD_WAN_IP=$(cat $WAN_IP_FILE)
-else
-  touch $WAN_IP_FILE
-  OLD_WAN_IP=""
-  echo "No previous IP file found, need IP update"
-fi
-
-# If WAN IP is unchanged and not -f flag, exit here
-if [ "$WAN_IP" = "$OLD_WAN_IP" ] && [ "$FORCE" = false ]; then
-  echo "WAN IP unchanged. To force update, use the -f true flag"
-  exit 0
-fi
 
 # Get zone_identifier & record_identifier
 ID_FILE=.cf-id-$CFRECORD_NAME.txt
@@ -93,17 +79,28 @@ else
   echo "$CFRECORD_NAME" >> $ID_FILE
 fi
 
+# Retrieve the current DNS record value
+CURRENT_DNS_IP=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/$CFZONE_ID/dns_records/$CFRECORD_ID" \
+  -H "X-Auth-Email: $CFUSER" \
+  -H "Authorization: Bearer ${CFAPI_TOKEN}" \
+  -H "Content-Type: application/json" | grep -Po '(?<="content":")[^"]*' | head -1)
+
+# If WAN IP is unchanged and not -f flag, exit here
+if [ "$WAN_IP" = "$CURRENT_DNS_IP" ] && [ "$FORCE" = false ]; then
+  echo "WAN IP unchanged. To force update, use the -f true flag"
+  exit 0
+fi
+
 # Update Cloudflare DNS record if WAN IP changed
 echo "Updating DNS to $WAN_IP"
 RESPONSE=$(curl -s -X PUT "https://api.cloudflare.com/client/v4/zones/$CFZONE_ID/dns_records/$CFRECORD_ID" \
   -H "X-Auth-Email: $CFUSER" \
   -H "Authorization: Bearer ${CFAPI_TOKEN}" \
   -H "Content-Type: application/json" \
-  --data "{\"id\":\"$CFZONE_ID\",\"type\":\"$CFRECORD_TYPE\",\"name\":\"$CFRECORD_NAME\",\"content\":\"$WAN_IP\", \"ttl\":$CFTTL}")
+  --data "{\"type\":\"$CFRECORD_TYPE\",\"name\":\"$CFRECORD_NAME\",\"content\":\"$WAN_IP\", \"ttl\":$CFTTL}")
 
 if [[ "$RESPONSE" == *"\"success\":true"* ]]; then
   echo "Updated successfully!"
-  echo $WAN_IP > $WAN_IP_FILE
 else
   echo "Update failed."
   echo "Response: $RESPONSE"
