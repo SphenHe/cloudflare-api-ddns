@@ -16,7 +16,7 @@ curl https://raw.githubusercontent.com/Leao9203/cloudflare-api-v4-ddns/dev/cf-v4
 
 ```sh
 cf-ddns.sh
-	-4|-6 \                    	# 指定 IPv4 或 IPv6
+    -4|-6 \                    	# 指定 IPv4 或 IPv6
     -a cloudflare-api-token \   # 指定 Cloudflare API 令牌
     -u user@example.com \       # 指定 Cloudflare 邮箱
     -h host.example.com \       # 您想要更新的记录的 FQDN

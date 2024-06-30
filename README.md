@@ -16,7 +16,7 @@ curl https://raw.githubusercontent.com/Leao9203/cloudflare-api-v4-ddns/dev/cf-v4
 
 ```sh
 cf-ddns.sh
-	-4|-6 \                    	# specify IPv4 or IPv6
+    -4|-6 \                    	# specify IPv4 or IPv6
     -a cloudflare-api-token \   # specify Cloudflare API token
     -u user@example.com \       # specify Cloudflare email
     -h host.example.com \       # FQDN of the record you want to update
