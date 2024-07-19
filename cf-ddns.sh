@@ -17,8 +17,8 @@ FORCE=false
 # Get parameter
 while getopts 46a:u:h:z:f: opts; do
   case ${opts} in
-    4) CFRECORD_TYPE="A"; WANIPSITE="http://ipv4.icanhazip.com" ;;
-    6) CFRECORD_TYPE="AAAA"; WANIPSITE="http://ipv6.icanhazip.com" ;;
+    4) CFRECORD_TYPE="A"; WANIPSITE="https://4.ipw.cn" ;;
+    6) CFRECORD_TYPE="AAAA"; WANIPSITE="https://6.ipw.cn" ;;
     a) CFAPI_TOKEN=${OPTARG} ;;
     u) CFUSER=${OPTARG} ;;
     h) CFRECORD_NAME=${OPTARG} ;;
