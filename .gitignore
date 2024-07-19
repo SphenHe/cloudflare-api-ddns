@@ -1,3 +1,4 @@
 .cf-id-*
 cf-ddns-v4.log
 cf-ddns-v6.log
+run.sh
