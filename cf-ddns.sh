@@ -8,8 +8,8 @@ set -o pipefail
 # Default config
 CFAPI_TOKEN=""
 CFUSER=""
-CFRECORD_NAME=""
 CFZONE_NAME=""
+CFRECORD_NAME=""
 
 CFTTL=120
 FORCE=false
