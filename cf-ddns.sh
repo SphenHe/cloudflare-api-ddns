@@ -84,10 +84,10 @@ else
         CFRECORD_ID=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/$CFZONE_ID/dns_records?name=$CFRECORD_NAME&type=$CFRECORD_TYPE" -H "X-Auth-Email: $CFUSER" -H "Authorization: Bearer $CFAPI_TOKEN" -H "Content-Type: application/json" | grep -Po '(?<="id":")[^"]*' | head -1 || true)
     fi
   fi
-  echo "$(date) | $CFZONE_ID" > $ID_FILE
-  echo "$(date) | $CFRECORD_ID" >> $ID_FILE
-  echo "$(date) | $CFZONE_NAME" >> $ID_FILE
-  echo "$(date) | $CFRECORD_NAME" >> $ID_FILE
+  echo "$CFZONE_ID" > $ID_FILE
+  echo "$CFRECORD_ID" >> $ID_FILE
+  echo "$CFZONE_NAME" >> $ID_FILE
+  echo "$CFRECORD_NAME" >> $ID_FILE
 fi
 
 # Retrieve the current DNS record value if it exists
